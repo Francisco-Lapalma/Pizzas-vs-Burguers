@@ -1,52 +1,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
-    
-    private CharacterController ccPlayer;
-    [SerializeField] protected PlayerData playerStats;
 
+    [SerializeField] protected PlayerData playerStat;
+    private NavMeshAgent playerAgent;
+    [SerializeField] private GameObject cursorPoint;
+
+    private void Awake()
+    {
+        playerAgent = GetComponent<NavMeshAgent>();
+    }
     void Start()
     {
-        ccPlayer = GetComponent<CharacterController>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        MovementPlayer();
-        PlayerGravity();
+        CursorUpdate();
+        playerAgent.destination = cursorPoint.transform.position;
     }
 
-    private void PlayerGravity()
+    private void CursorUpdate()
     {
-        ccPlayer.Move(transform.TransformDirection(Vector3.down) * playerStats.playerGravity * Time.deltaTime);
+        if (Input.GetMouseButtonDown(0))
+        {
+            cursorPoint.transform.position = GetPositionTo(Input.mousePosition);
+        }
     }
 
-    private void MovePlayer(Vector3 direction)
+    private Vector3 GetPositionTo(Vector3 newPosition)
     {
-        ccPlayer.Move(playerStats.playerSpeed * Time.deltaTime * transform.TransformDirection(direction));
-    }
-
-    private void MovementPlayer()
-    {
-        if (Input.GetKey(KeyCode.W))
+        RaycastHit hit;
+        Ray rayPosition = Camera.main.ScreenPointToRay(newPosition);
+        if (Physics.Raycast(rayPosition, out hit))
         {
-            MovePlayer(Vector3.forward);
+            return hit.point;
         }
-        if (Input.GetKey(KeyCode.S))
-        {
-            MovePlayer(Vector3.back);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            MovePlayer(Vector3.left);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            MovePlayer(Vector3.right);
-        }
+        return Vector3.zero;
     }
 }
